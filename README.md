@@ -6,3 +6,7 @@
   - https://github.com/qqwweee/keras-yolo3
   
   - https://github.com/Qidian213/deep_sort_yolov3
+
+  # Model
+
+  Download KERAS model into the model_data folder from here: www.martingramatica.me/resources/deepsort/yolo.h5
