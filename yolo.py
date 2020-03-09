@@ -35,7 +35,7 @@ class YOLO(object):
         self.class_threshold = 0.6
         self.net_h = 416
         self.net_w = 416
-        self.obj_thresh = 0.6
+        self.obj_thresh = 0.8
         self.nms_thresh = 0.45
         
         self.is_fixed_size = self.model_image_size != (None, None)
@@ -110,8 +110,9 @@ class YOLO(object):
             # decode the output of the network
             # we need out_boxes, out_scores, out_classes
             # we are loosing class and score information here!
-
-            tmpBox = self.decode_netout(yolos[i][0], self.anchors.flatten()[i*6:(i+1)+6], self.obj_thresh, self.nms_thresh, self.net_h, self.net_w)
+            
+            anchor_idx = 2 - i
+            tmpBox = self.decode_netout(yolos[i][0], self.anchors.flatten()[anchor_idx*6:(anchor_idx+1)*6], self.obj_thresh, self.nms_thresh, self.net_h, self.net_w)
             
             for j in range(len(tmpBox)):
                 x = (tmpBox[j].x * image.size[0])  
@@ -124,7 +125,7 @@ class YOLO(object):
                 if y < 0 :
                     h = h + y
                     y = 0 
-                return_boxs.append([x,y,w,h])
+                return_boxs.append([x,y,w,h, tmpBox[j].get_label(), tmpBox[j].get_score()])
             
         return return_boxs
 

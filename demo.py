@@ -69,7 +69,7 @@ def main(yolo):
         image = Image.fromarray(frame[...,::-1]) #bgr to rgb
         boxs = yolo.detect_image(image)
        # print("box_num",len(boxs))
-        features = encoder(frame,boxs)
+        features = encoder(frame,np.array(boxs)[:,0:4].tolist())
         
         # score to 1.0 here).
         detections = [Detection(bbox, 1.0, feature) for bbox, feature in zip(boxs, features)]
@@ -94,6 +94,7 @@ def main(yolo):
         for det in detections:
             bbox = det.to_tlbr()
             cv2.rectangle(frame,(int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])),(255,0,0), 2)
+            cv2.putText(frame, str(det.score),(int(bbox[0]), int(bbox[1])),0, 5e-3 * 200, (0,255,0),2)
             
         cv2.imshow('', frame)
         
