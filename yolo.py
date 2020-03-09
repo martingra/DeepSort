@@ -105,17 +105,14 @@ class YOLO(object):
         yolos = self.yolo_model.predict(image_data)
 
         return_boxs = []
-        #TODO: use normal anchors
-        auxAnchors = [[116,90,  156,198,  373,326],  [30,61, 62,45,  59,119], [10,13,  16,30,  33,23]]
+
         for i in range(len(yolos)):
             # decode the output of the network
             # we need out_boxes, out_scores, out_classes
             # we are loosing class and score information here!
 
-            tmpBox = self.decode_netout(yolos[i][0], auxAnchors[i], self.obj_thresh, self.nms_thresh, self.net_h, self.net_w)
+            tmpBox = self.decode_netout(yolos[i][0], self.anchors.flatten()[i*6:(i+1)+6], self.obj_thresh, self.nms_thresh, self.net_h, self.net_w)
             
-
-
             for j in range(len(tmpBox)):
                 x = (tmpBox[j].x * image.size[0])  
                 y = (tmpBox[j].y * image.size[1])  
