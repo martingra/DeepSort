@@ -35,7 +35,7 @@ class YOLO(object):
         self.class_threshold = 0.6
         self.net_h = 416
         self.net_w = 416
-        self.obj_thresh = 0.97
+        self.obj_thresh = 0.6
         self.nms_thresh = 0.45
         
         self.is_fixed_size = self.model_image_size != (None, None)

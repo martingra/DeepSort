@@ -35,8 +35,19 @@ def main(yolo):
     tracker = Tracker(metric)
 
     writeVideo_flag = True 
-    
-    video_capture = cv2.VideoCapture(0)
+    webcam_flag = False
+
+    # some links from earthcam https://github.com/Crazycook/Working/blob/master/Webcams.txt    https://www.vlcm3u.com/web-cam-live/
+    video_url = 'https://videos3.earthcam.com/fecnetwork/9974.flv/chunklist_w1421640637.m3u8' # NYC
+
+    # video_url = 'https://videos3.earthcam.com/fecnetwork/hdtimes10.flv/chunklist_w48750913.m3u8'
+
+    if webcam_flag:
+        video_capture = cv2.VideoCapture(0)
+    else:
+        video_capture = cv2.VideoCapture()
+        video_capture.set(cv2.CAP_PROP_BUFFERSIZE, 2)
+        video_capture.open(video_url)
 
     if writeVideo_flag:
     # Define the codec and create VideoWriter object
