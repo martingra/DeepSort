@@ -30,12 +30,12 @@ class YOLO(object):
         self.class_names = self._get_class()
         self.anchors = self._get_anchors()
         self.sess = K.get_session()
-        self.model_image_size = (416, 416) # fixed size or (None, None)
+        self.model_image_size = (None,None) #(416, 416) # fixed size or (None, None)
         
         self.class_threshold = 0.6
         self.net_h = 416
         self.net_w = 416
-        self.obj_thresh = 0.8
+        self.obj_thresh = 0.7
         self.nms_thresh = 0.45
         
         self.is_fixed_size = self.model_image_size != (None, None)
@@ -163,7 +163,7 @@ class YOLO(object):
                 x = (col + x) / grid_w # center position, unit: image width
                 y = (row + y) / grid_h # center position, unit: image height
                 w = anchors[2 * b + 0] * np.exp(w) / net_w # unit: image width
-                h = anchors[2 * b + 1] * np.exp(h) / net_h # unit: image height  
+                h = anchors[2 * b + 1] * np.exp(h) / net_h # unit: image height
             
                 # last elements are class probabilities
                 classes = netout[int(row)][col][b][5:]

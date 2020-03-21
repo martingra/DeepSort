@@ -36,11 +36,16 @@ def main(yolo):
 
     writeVideo_flag = True 
     webcam_flag = False
+    resize_flag = True
+    resize_size = (800, 450)
 
     # some links from earthcam https://github.com/Crazycook/Working/blob/master/Webcams.txt    https://www.vlcm3u.com/web-cam-live/
-    video_url = 'https://videos3.earthcam.com/fecnetwork/9974.flv/chunklist_w1421640637.m3u8' # NYC
-
-    # video_url = 'https://videos3.earthcam.com/fecnetwork/hdtimes10.flv/chunklist_w48750913.m3u8'
+    # video_url = 'https://videos3.earthcam.com/fecnetwork/lacitytours1.flv/chunklist_w683585821.m3u8' # HOLLYWOOD
+    # video_url = 'https://videos3.earthcam.com/fecnetwork/9974.flv/chunklist_w1421640637.m3u8' # NYC
+    # video_url = 'https://videos3.earthcam.com/fecnetwork/5775.flv/chunklist_w1803081483.m3u8' # NYC 2
+    # video_url = 'http://181.1.29.189:60001/cgi-bin/snapshot.cgi?chn=0&u=admin'
+    # video_url = 'https://videos-3.earthcam.com/fecnetwork/15559.flv/chunklist_w573709200.m3u8' # NYC 3
+    video_url = 'https://hddn01.skylinewebcams.com/live.m3u8?a=97psdt8nv2hsmclta3nuu4di94'
 
     if webcam_flag:
         video_capture = cv2.VideoCapture(0)
@@ -65,37 +70,44 @@ def main(yolo):
             break
         t1 = time.time()
 
+        if resize_flag:
+            frame = cv2.resize(frame,resize_size, interpolation = cv2.INTER_AREA)
+
        # image = Image.fromarray(frame)
         image = Image.fromarray(frame[...,::-1]) #bgr to rgb
         boxs = yolo.detect_image(image)
        # print("box_num",len(boxs))
-        features = encoder(frame,np.array(boxs)[:,0:4].tolist())
+        if np.array(boxs).size > 0:
+            features = encoder(frame,np.array(boxs)[:,0:4].tolist())
         
-        # score to 1.0 here).
-        detections = [Detection(bbox, 1.0, feature) for bbox, feature in zip(boxs, features)]
-        
-        # Run non-maxima suppression.
-        boxes = np.array([d.tlwh for d in detections])
-        scores = np.array([d.confidence for d in detections])
-        indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
-        detections = [detections[i] for i in indices]
-        
-         #Call the tracker
-        tracker.predict()
-        tracker.update(detections)
-        
-        for track in tracker.tracks:
-            if not track.is_confirmed() or track.time_since_update > 1:
-                continue 
-            bbox = track.to_tlbr()
-            cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])),(255,255,255), 2)
-            cv2.putText(frame, str(track.track_id),(int(bbox[0]), int(bbox[1])),0, 5e-3 * 200, (0,255,0),2)
+            class_names = yolo.class_names
 
-        for det in detections:
-            bbox = det.to_tlbr()
-            cv2.rectangle(frame,(int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])),(255,0,0), 2)
-            cv2.putText(frame, str(det.score),(int(bbox[0]), int(bbox[1])),0, 5e-3 * 200, (0,255,0),2)
-            
+            # score to 1.0 here).
+            detections = [Detection(bbox, 1.0, feature) for bbox, feature in zip(boxs, features)]
+        
+            # Run non-maxima suppression.
+            boxes = np.array([d.tlwh for d in detections])
+            scores = np.array([d.confidence for d in detections])
+            indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
+            detections = [detections[i] for i in indices]
+        
+             #Call the tracker
+            tracker.predict()
+            tracker.update(detections)
+        
+            for track in tracker.tracks:
+                if not track.is_confirmed() or track.time_since_update > 1:
+                    continue 
+                bbox = track.to_tlbr()
+                cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])),(255,255,255), 2)
+                cv2.putText(frame,  str(track.track_id),(int(bbox[0]), int(bbox[1])-10),0, 5e-3 * 100, (0,0,255),2)
+
+            for det in detections:
+                bbox = det.to_tlbr()
+                cv2.rectangle(frame,(int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])),(255,0,0), 2)
+                cv2.putText(frame, class_names[int(det.label)] + "(" + str(round(det.score,2)) + ")",(int(bbox[0]), int(bbox[3])),0, 5e-3 * 90, (255,0,0),2)
+                #cv2.putText(frame, str(int(bbox[0])) + "-" + str(int(bbox[3])) ,(int(bbox[0]), int(bbox[3])),0, 5e-3 * 90, (0,0,255),2)
+
         cv2.imshow('', frame)
         
         if writeVideo_flag:
